@@ -1,9 +1,9 @@
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { Loader, TodoFilter, TodoList, TodoModal } from './components';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { getTodos, getUser } from './api';
-import { Todo } from './types/Todo';
+// import { Todo } from './types/Todo';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { setError, setTodos, startLoading } from './features/todos';
 import { User } from './types/User';
@@ -20,20 +20,26 @@ export const App = () => {
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState('');
 
-  useEffect(() => {
+  const loadUser = useCallback(() => {
     if (!selectedTodo) {
       return;
     }
 
-    setUser(null);
-    setUserError('');
     setUserLoading(true);
-
+    setUserError('');
     getUser(selectedTodo.userId)
       .then(setUser)
       .catch(e => setUserError(e.message))
       .finally(() => setUserLoading(false));
   }, [selectedTodo]);
+
+  useEffect(() => {
+    if (selectedTodo) {
+      loadUser();
+    } else {
+      setUser(null);
+    }
+  }, [selectedTodo, loadUser]);
 
   const loadTodos = useCallback(() => {
     dispatch(startLoading());
@@ -51,26 +57,25 @@ export const App = () => {
     dispatch(clearCurrentTodo());
   };
 
-  function getPreparedTodos(todosList: Todo[], value: string) {
-    return todosList
-      .filter(todo => {
-        return todo.title.toLowerCase().includes(value.toLowerCase());
-      })
+  const filterTodos = useMemo(() => {
+    return todos
+      .filter(todo => todo.title.toLowerCase().includes(query.toLowerCase()))
       .filter(todo => {
         switch (status) {
-          case 'all':
-            return todo.completed || !todo.completed;
           case 'active':
             return !todo.completed;
           case 'completed':
             return todo.completed;
+          case 'all':
+          default:
+            return true;
         }
       });
-  }
+  }, [todos, query, status]);
 
-  const filterTodos = getPreparedTodos(todos, query);
+  // const filterTodos = getPreparedTodos(todos, query);
 
-  const handleRetryUser = () => {
+  const handleRetryTodos = () => {
     loadTodos();
   };
 
@@ -93,7 +98,7 @@ export const App = () => {
           </p>
           <button
             className="button is-medium retry-btn"
-            onClick={handleRetryUser}
+            onClick={handleRetryTodos}
           >
             Try Again
           </button>
@@ -129,7 +134,7 @@ export const App = () => {
           user={user}
           loading={userLoading}
           error={userError}
-          onRetry={handleRetryUser}
+          onRetry={loadUser}
         />
       )}
     </>

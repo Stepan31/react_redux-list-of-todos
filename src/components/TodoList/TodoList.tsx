@@ -2,7 +2,7 @@ import React from 'react';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { setCurrentTodo } from '../../features/currentTodo';
+import { setCurrentTodo, clearCurrentTodo } from '../../features/currentTodo';
 
 type Props = {
   todos: Todo[];
@@ -13,7 +13,11 @@ export const TodoList: React.FC<Props> = ({ todos }) => {
   const selectedTodo = useAppSelector(state => state.currentTodo);
 
   const handleOpenModal = (todo: Todo) => {
-    dispatch(setCurrentTodo(todo));
+    if (selectedTodo?.id === todo.id) {
+      dispatch(clearCurrentTodo());
+    } else {
+      dispatch(setCurrentTodo(todo));
+    }
   };
 
   if (todos.length === 0) {

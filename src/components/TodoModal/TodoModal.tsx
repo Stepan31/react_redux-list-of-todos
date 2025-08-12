@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Loader } from '../Loader';
 import { User } from '../../types/User';
 import { Todo } from '../../types/Todo';
@@ -20,6 +20,21 @@ export const TodoModal: React.FC<Props> = ({
   error,
   onRetry,
 }) => {
+  // Додаємо слухач Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
   return (
     <div className="modal is-active" data-cy="modal">
       <div className="modal-background" onClick={onClose} />
@@ -29,13 +44,13 @@ export const TodoModal: React.FC<Props> = ({
       ) : error ? (
         <div className="modal-card">
           <div
-            className={`
-                modal-card-body
-                is-flex
-                is-flex-direction-column
-                is-justify-content-center
-                is-align-items-center
-              `}
+            className="
+              modal-card-body
+              is-flex
+              is-flex-direction-column
+              is-justify-content-center
+              is-align-items-center
+            "
           >
             <button className="button is-medium" onClick={onRetry}>
               <span>Retry</span>
@@ -53,6 +68,7 @@ export const TodoModal: React.FC<Props> = ({
               {`Todo #${selectedTodo.id}`}
             </div>
             <button
+              aria-label="Close modal"
               type="button"
               className="delete"
               data-cy="modal-close"

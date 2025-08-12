@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Todo } from '../types/Todo';
 
 export interface TodosState {
@@ -23,11 +23,11 @@ export const todosSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    setTodos: (state, action) => {
+    setTodos: (state, action: PayloadAction<Todo[]>) => {
       state.loading = false;
       state.items = action.payload;
     },
-    setError: (state, action) => {
+    setError: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
